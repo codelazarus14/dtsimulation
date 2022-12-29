@@ -1,0 +1,4 @@
+Binary file DT.class matches
+DT.java:        public int FRAC=117;
+DT.java:markedq=FRAC;
+DT.java:        kappa_b=kappa_b-2*kappa_0*(dum2-FRAC);

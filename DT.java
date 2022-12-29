@@ -1,27 +1,36 @@
+import java.io.File;  // Import the File class
+import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.util.Scanner; // Import the Scanner class to read text files
+
 public class DT{
 
 	/* some global constants for run */
 
 	public enum LOGIC {NO, YES};
-	public double kappa_0=0.0,BETA=1.0,kappa_d=0.0, kappa_b=0.0;
+	public double kappa_0=0.0,BETA=3.0,kappa_d=0.0, kappa_0b=0.0,ALPHA=0.25;
+	public int  DISKVOL=472;
+	public int DISKMINVOL=DISKVOL-30;
+	public int DISKMAXVOL=DISKVOL+30;
+	public double FRAC=0.75;
+	public double TC=7.0;
+	public int MARKEDQ=282; //FRAC*(DISKVOL+2)/(2.0-FRAC)
 
 	public static int D=2;
 	public int DPLUS=D+1;
 	public int DPLUSPLUS=D+2;
-	public int VOL=364;
+	public int VOL=DISKVOL+MARKEDQ;
 	public int BIGVOL=4*VOL;
-	public int MAXVOL=VOL+100;
+	public int MAXVOL=VOL+30;
 	public int MINVOL=DPLUSPLUS;
 	public int NUMROW=VOL/2;
 	public int NONZEROS=NUMROW*VOL;
 
-	public int THERMALISE=1000;
-	public int SWEEPS=10000;
-	public int TUNE_COUPLING=200;
+	public int THERMALISE=500;
+	public int SWEEPS=20000;
+	public int TUNE_COUPLING=100;
 	public int SEED=1;
 	public int GAP=10;
-	public int DV=4;
-    public int BDY=140;
+	public int DV=2;
 
 	/* simple global pointers and counters */
 
@@ -33,7 +42,7 @@ public class DT{
 	public static int node_number=0;
 	public static int boundary_length;
 	public static int[] boundary;
-	
+
 	public static int[] nstart, ncol;
 	public static double[] nlap;
 
@@ -81,7 +90,7 @@ void PrintConfig(){
 
 	public LOGIC allowed_move(SIMPLEX p, int sub, int[] a)
 	{
-		
+
 		SIMPLEX[] array1, array2, dum, examine;
 		int i,j,number1,number2,search;
 		int[] b;
@@ -103,7 +112,7 @@ void PrintConfig(){
 			return(good);
 
 		if (subsimplex==0)
-			return(good); 
+			return(good);
 
 		j=0;
 		for(i=0;i<DPLUS;i++)
@@ -114,7 +123,7 @@ void PrintConfig(){
 		number1=1;
 		examine[0]=p;
 		search=1;
-		p.flag=LOGIC.YES; 
+		p.flag=LOGIC.YES;
 
 		/* loop while new neighbour simplices to examine */
 
@@ -203,7 +212,7 @@ void PrintConfig(){
 	/* neighbouring simplices */
 	/* which share a face also encompassing this subsimplex */
 
-	public void common_simplex(SIMPLEX p, int[] a, int n, SIMPLEX[] face) 
+	public void common_simplex(SIMPLEX p, int[] a, int n, SIMPLEX[] face)
 	{
         int i, j;
 		int[] b, mask = new int[DPLUS];
@@ -251,9 +260,9 @@ void PrintConfig(){
 
 		return(VOL);
 	}
-    
+
     // wrap num in single element array to pass by ref !
-    
+
 	public int find_order(int a, SIMPLEX pp){
 		int[] dum,num;
 		SIMPLEX[] list;
@@ -270,7 +279,7 @@ void PrintConfig(){
 	}
 	/* finds addresses of all simplices which share a given subsimplex */
 
-	public void find_simplices(SIMPLEX p, int[] a, int sub, 
+	public void find_simplices(SIMPLEX p, int[] a, int sub,
 			SIMPLEX[] s_near, int[] num) {
 
 		SIMPLEX[] array1,array2,near;
@@ -279,7 +288,7 @@ void PrintConfig(){
 		array2=new SIMPLEX[MAXVOL];
 		near=new SIMPLEX[DPLUS];
         int number;
-        
+
 		array1[0]=p;
 		num1=1;
 		s_near[0]=p;
@@ -318,7 +327,7 @@ void PrintConfig(){
 
 		for(i=0;i<(number);i++)
 			s_near[i].flag=LOGIC.NO;
-        
+
         num[0]=number;
         return;
 	}
@@ -329,7 +338,7 @@ void PrintConfig(){
 	/* also returns pointers to these d+1-i simplices */
 	/* and opposing vertex is placed at end of a[] */
 
-	public LOGIC good_subsimplex(SIMPLEX p, int sub, int[] a, 
+	public LOGIC good_subsimplex(SIMPLEX p, int sub, int[] a,
 			SIMPLEX[] isimplex)
 	{
 		int i,add,temp, seen_already, opposing;
@@ -423,17 +432,119 @@ void PrintConfig(){
 	}
 
 
+	public void ReadFile() {
+			try {
+								File myObj = new File("config.txt");
+								int  count,s_number,i,j,k,dummy,l_number,c,e1,e2,simp;
+								int[] dum;
+								int[][] dum2;
+								dum=new int[DPLUS];
+
+								double k0,b;
+								double temp;
+
+								Scanner myReader = new Scanner(myObj);
+
+								s_number= myReader.nextInt();
+								dum2=new int[s_number][DPLUS];
+								node_number=myReader.nextInt();
+								count=myReader.nextInt();
+								temp=myReader.nextFloat();
+								temp=myReader.nextFloat();
+								temp=myReader.nextFloat();
+
+								System.out.println(s_number+" "+node_number+" "+count);
+
+
+
+								simplex_number=0;
+								stack_count=0;
+								pointer_number=0;
+								System.out.println("Reading in existing configuration\n");
+
+
+								System.out.println("\nConfiguration has volume=" +s_number);
+								System.out.println("\nNode number="+node_number);
+								System.out.println("\n  k0b coupling, k2 coupling and curvaturesq coupling ="+kappa_0b+" "+kappa_d +" "+BETA);
+
+
+								for(i=0;i<count;i++)
+								{
+									dummy=myReader.nextInt();
+									push(dummy);
+								}
+
+
+								for(i=0;i<s_number;i++)
+								{
+										for(j=0;j<DPLUS;j++){
+											dum[j]=myReader.nextInt();
+											dum2[i][j]=myReader.nextInt();
+										}
+
+										simplex_point[i]=new SIMPLEX(dum,D);
+										simplex_number++;
+										pointer_number++;
+
+								}
+
+								for(i=0;i<s_number;i++)
+								{
+										for(j=0;j<DPLUS;j++){
+											simplex_point[i].neighbour[j]=simplex_point[dum2[i][j]];
+										}
+
+								}
+
+
+								for(i=0;i<s_number;i++)
+								{
+									//System.out.println(simplex_point[i].label+ ":\t" );
+									for(j=0;j<DPLUS;j++){
+										System.out.println(simplex_point[i].vertex[j]+ "\t" +simplex_point[i].neighbour[j].label+ "\t" );
+									}
+										System.out.println("\n");
+								}
+
+
+
+								//for(i=0;i<VOL;i++)
+								//fscanf(fp1,"%d",&localvol[i]);
+
+								growing_vol=simplex_number;
+
+
+								System.out.printf("\nHave read data successfully\n ");
+
+
+
+								myReader.close();
+
+			} catch (FileNotFoundException e) {
+				System.out.println("An error occurred.");
+				e.printStackTrace();
+			}
+			return;
+	}
+
+
+
     void thermalize(){
-    int i,therm;
-    
-    simplex_point=new SIMPLEX[BIGVOL];
+    int therm;
+
+		System.out.println("Let's run reading files");
+		simplex_point=new SIMPLEX[BIGVOL];
+
+		ReadFile();
+
+
     nlap=new double[NONZEROS];
     ncol=new int[NONZEROS];
     nstart=new int[VOL];
     boundary=new int[VOL];
- 
-        System.out.println("About to call initial_config");
-		initial_config();
+
+    //System.out.println("About to call initial_config");
+		//initial_config();
         //PrintConfig();
 
 		legal_subsimplex=new int[DPLUS];
@@ -442,14 +553,16 @@ void PrintConfig(){
 		go_subsimplex=new int[DPLUS];
 
 		/* build lattice */
-        System.out.println("About to grow lattice");
-        
-		grow=LOGIC.YES;
-		while(growing_vol<VOL) {
-//			System.out.println(growing_vol);
-			trial_change();
-			growing_vol+=D;
-            //PrintConfig();
+    //    System.out.println("About to grow lattice");
+
+		grow=LOGIC.NO;
+		if(grow==LOGIC.YES){
+				while(growing_vol<VOL) {
+		//			System.out.println(growing_vol);
+					trial_change();
+					growing_vol+=D;
+		            //PrintConfig();
+				}
 		}
         tidy();
 
@@ -469,41 +582,66 @@ void PrintConfig(){
 			}
             tidy();
             //PrintConfig();
+						// find pointer to node 0
+					 int done=0,v;
+					 //System.out.println("simplex number= "+simplex_number);
+					 SIMPLEX p=null;
+					 int[] nn=null;
+					 int[] num=null;
+					 num=new int[1];
+					 nn=new int[VOL];
+
+					 for(int i=0;i<simplex_number;i++){
+					 if(done==1) break;
+					 for(int j=0;j<(DT.D+1);j++){
+					 if(simplex_point[i].vertex[j]==0){p=simplex_point[i];done=1;break;}
+					 }}
+					 v=0;
+
+					 getnn(p,v,nn,num);
+					 //boundary_length=num[0];
 
 
 			num_monitor++;
 			vol_monitor+=simplex_number;
-            b_monitor+=boundary_length;
+            b_monitor+= num[0];
 
-			if(therm%TUNE_COUPLING==0)
+			if(therm%TUNE_COUPLING==0){
+					System.out.println("V: " + (simplex_number-num[0])  );
+					System.out.println("L: " + num[0]);
+					System.out.println("N0B: "+(node_number-boundary_length-1));
+
 				shift_coupling();
+			}
 
 
 		}
 
 		init();
+
+		return;
 }
 
-        
+
 // hardwired for D=2 right now ..
-    
+
 public void getnn(SIMPLEX p, int v, int[] nn, int[] vnum){
     int[] dum,seen,num,v1,v2;
     int i,j,k,currentpt,nextpt,working,index;
     SIMPLEX[] list;
-    
+
     list=new SIMPLEX[BIGVOL];
     dum=new int[DPLUS];
     seen=new int[VOL];
     num=new int[1];
     v1=new int[VOL];
     v2=new int[VOL];
-    
+
     //System.out.println("in getnn");
     //tidy();
     //relabelnodes();
-    
-    
+
+
     dum[0]=v;
     int dummy=1;
     //System.out.println("simps around node");
@@ -514,38 +652,38 @@ public void getnn(SIMPLEX p, int v, int[] nn, int[] vnum){
      //   +list[i].vertex[1]+" "
       //  +list[i].vertex[2]);
    // }
-    
+
     for(i=0;i<VOL;i++){
     seen[i]=0;}
-    
+
     k=0;
     for(i=0;i<num[0];i++){
     index=0;
-    
+
     for(j=0;j<DPLUS;j++){
     if(list[i].vertex[j]==v){
     index=j;}
     }
-    
+
     v1[k]=list[i].vertex[(index+1)%DPLUS];
     v2[k]=list[i].vertex[(index+2)%DPLUS];
     k++;
     }
-    
+
     //for(i=0;i<num[0];i++){
     //System.out.println("v1,v2 "+v1[i]+" "+v2[i]);
     //}
-    
+
     nn[0]=v1[0];
     //boundary[1]=v2[0];
     seen[0]=1;
     k=1;
-    
+
     // look for v1[0] in rest of v1/v2 arrays
     currentpt=v1[0];
     do{
     nextpt=0;
-    
+
     for(i=0;i<num[0];i++){
     if(seen[i]==0){
     //System.out.println("examining next triangle with i= "+i);
@@ -556,20 +694,20 @@ public void getnn(SIMPLEX p, int v, int[] nn, int[] vnum){
     nn[k]=v1[i];
     nextpt=v1[i];k++;seen[i]=1;}
     }
-    
+
     }
     //System.out.println("nextpt is "+nextpt);
     currentpt=nextpt;
     }while(k<num[0]);
-    
-    
+
+
     vnum[0]=num[0];
-    
+
     //System.out.println("ordered verts");
     //for(i=0;i<vnum[0];i++){
     //System.out.println("neighbor vertices "+nn[i]);
     //}
-return;  
+return;
 }
 
 public void laplacian(){
@@ -580,10 +718,11 @@ SIMPLEX p=null;
 num=new int[1];
 nn=new int[VOL];
 not_seen=new int[VOL];
-    
+
 //System.out.println("In laplacian");
 
  // find pointer to node 0
+
 done=0;
 for(i=0;i<simplex_number;i++){
 if(done==1) break;
@@ -591,10 +730,11 @@ for(j=0;j<(DT.D+1);j++){
 if(simplex_point[i].vertex[j]==0){p=simplex_point[i];done=1;break;}
 }}
 v=0;
-  
+
 getnn(p,v,nn,num);
 boundary_length=num[0];
 System.out.println("Boundary length "+boundary_length);
+System.out.println("Total bulk node "+(node_number-boundary_length-1));
 
 //System.out.println("Boundary vertices: ");
 for(i=0;i<boundary_length;i++){
@@ -614,10 +754,10 @@ num=new int[1];
 
 for(i=0;i<VOL;i++){
 not_seen[i]=1;}
-    
+
 for(i=0;i<VOL;i++){
 on_boundary[i]=0;}
-    
+
 not_seen[0]=0;
 //on_boundary[0]=1;
 //for(i=0;i<boundary_length;i++){
@@ -661,13 +801,13 @@ getnn(simplex_point[i],v,nn,num);
             num_in_row[v]++;
         }
     }
-    
+
     // diagonal piece
     lap[start[v]+num_in_row[v]]=num_in_row[v];
     col[start[v]+num_in_row[v]]=v;
     num_in_row[v]++;
     if(num_in_row[v]>NUMROW){System.out.println("oops - dimension sparse row too large at v="+v);}
-    
+
     not_seen[v]=0;
   }
 }
@@ -710,21 +850,21 @@ nstart[i+1]=nstart[i]+num_in_row[i];
 
 return;
 }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     public void deletestack(){
         NODE tmp;
         NODE[] dum;
         int num=0;
-        
+
         dum=new NODE[VOL];
         tmp=stack_head;
         while(tmp!=null){
@@ -733,37 +873,37 @@ return;
         //printf("in deletestack()\n");
         //printf("num is %d\n",num);
         //printf("stack_count is %d\n",stack_count);
-        
-        
+
+
         stack_head=null;
         stack_count=0;
     }
-    
-    
+
+
     public void relabelnodes(){
         int[] not_seen,dum;
         int i,j,k,l,new2,old,v,VERYBIG=100000;
         SIMPLEX[] list;
         SIMPLEX address;
         int[] num;
-        
+
         num=new int[1];
-        
+
         not_seen=new int[VOL];
         list=new SIMPLEX[VOL];
         dum=new int[DPLUS];
-        
-        
+
+
         //System.out.println("in relabelnodes");
         //System.out.println("node number "+node_number);
-        
+
         // printf("in relabelnodes\n");
         // printf("node number is %d\n",node_number);
-        
-        
+
+
         for(i=0;i<VOL;i++){
             not_seen[i]=1;}
-        
+
         new2=VERYBIG+1;
         for(i=0;i<simplex_number;i++){
             for(j=0;j<DPLUS;j++){
@@ -773,7 +913,7 @@ return;
                 //if(old>VERYBIG) continue;
                 if(not_seen[old]==1){
                     //printf("found old %d ",old);
-                    
+
                     dum[0]=old;
                     int dummy=1;
             find_simplices(simplex_point[i],dum,dummy,list,num);
@@ -807,35 +947,74 @@ return;
             simplex_point[i].sum=add;
             // printf("sum of vertex labels %d\n",add);
         }
-        
+
         //printf("%d final distinct vertices\n",newcount);
         // delete old node stack ...
-        
+
         deletestack();
-        
+
         return;
     }
 	/* driver for simplex Monte Carlo */
+
+
+
 
 	void main()
 	{
 		int iter,sweep;
 
+
+	 	//ReadFile();
 		thermalize();
 		/* sweep lattice outputting measurements every so often */
 
+		System.out.println("Starting measurements");
+    System.out.println("Starting measurements");
 
-        System.out.println("Starting measurements");
+		System.out.println("Why the printing is not working?");
+
 		for(sweep=1;sweep<=SWEEPS;sweep++)
 		{
+			System.out.println("sweep="+sweep);
 
-			for(iter=0;iter<VOL;iter++)
+			for(iter=0;iter<VOL;iter++){
 				trial_change();
-            //PrintConfig();
-            tidy();
-            if(sweep%100==0){shift_coupling();}
+			}
 
-			
+            //PrintConfig();
+      tidy();
+			int done=0,v;
+			System.out.println("simplex number= "+simplex_number);
+			SIMPLEX p=null;
+			int[] nn;
+			int[] num;
+			num=new int[1];
+			nn=new int[VOL];
+
+			for(int i=0;i<simplex_number;i++){
+			if(done==1) break;
+			for(int j=0;j<(DT.D+1);j++){
+			if(simplex_point[i].vertex[j]==0){p=simplex_point[i];done=1;break;}
+			}}
+			v=0;
+
+			getnn(p,v,nn,num);
+
+			boundary_length=num[0];
+
+
+ 		num_monitor++;
+ 		vol_monitor+=simplex_number;
+			 b_monitor+=boundary_length;
+
+      if(sweep%100==0){
+				shift_coupling();
+				System.out.println("Boundaryyyy length "+boundary_length);
+				System.out.println("Total bulkyyy node "+(node_number-boundary_length-1));
+			}
+
+
         //if(sweep%GAP==0){
 				//measure();
 			//}
@@ -862,7 +1041,7 @@ return;
 
 		System.out.println("Dimension " + D);
 		System.out.println("Volume "+ VOL);
-        System.out.println("Marked node coupling " + kappa_0);
+    System.out.println("Marked node coupling " + ALPHA);
 		System.out.println("Simplex coupling "+ kappa_d);
 		System.out.println("Bulk coupling " + BETA);
 		System.out.println("Number of sweeps " + SWEEPS);
@@ -902,7 +1081,7 @@ return;
 		int[] dum,dum2;
 		dum=new int[DPLUSPLUS];
 		dum2=new int[DPLUSPLUS];
-    
+
 		for(i=0;i<DPLUSPLUS;i++)
 			dum[i]=i;
 
@@ -911,12 +1090,12 @@ return;
 			combo(dum,dum2,DPLUSPLUS,i);
            // for(j=0;j<DPLUS;j++){
                // System.out.println("dum2[j] is "+dum2[j]);}
-            
+
 			simplex_point[pointer_number]=new SIMPLEX(dum2,D);
            // System.out.println("vertices of simplex are ");
           //  for(j=0;j<DPLUS;j++){
           //  System.out.println(simplex_point[pointer_number].vertex[j]);}
-            
+
 
 			simplex_number++;
 			pointer_number++;
@@ -947,6 +1126,7 @@ return;
 		real_simplex+=(double)simplex_number;
 		real_node+=(double)node_number;
 
+
 		tidy();
 
 		number_measure++;
@@ -955,61 +1135,43 @@ return;
 
 		return;
 	}
-    
-	
- public int DS(int q, int deltaq, int qmean){
+
+
+ public double DS(int q, int deltaq, double qmean){
 // computes change in local action. Assumes (q-qmean)^2 form
     return(deltaq*(deltaq+2*q-2*qmean));
-     
+
 }
-public LOGIC metropolis(int subsimplex, int[] a,
+public LOGIC metropolis2(int subsimplex, int[] a,
 			SIMPLEX[] addresses) {
-		double ds0,dsd,dsn,dummy,change;
+		double ds0=0.0,dsd=0.0,dsn=0.0,dummy,change;
 		LOGIC accept;
-		int i,j,k,markedq,dum,notnnmarked,imark,TC=7;
+		int i,j,k,dum,notnnmarked,imark;
         int[] vnum,nn,notbound;
         SIMPLEX p=null;
 		int tmp;
         vnum=new int[1];
         nn=new int[VOL];
         notbound=new int[DPLUSPLUS];
-  
-  
-markedq=BDY;
- 
-if(subsimplex==0)
-ds0=-kappa_0;
 
-else if(subsimplex==D)
-ds0=kappa_0;
 
-else
-ds0=0.0;
-
-dsd=kappa_d*(2*subsimplex-D);
-
-/* add restoring force to VOL */
-dsd=dsd+(2*subsimplex-D)*((2*subsimplex-D)+2*(simplex_number-growing_vol))/(1.0*DV*DV);
-
-dsd=dsd-ds0;
-        
 // find marked node
         int done=0;
         for(i=0;i<pointer_number;i++){
             if(simplex_point[i]==null) continue;
-            
+
         if(done==1) break;
         for(j=0;j<DPLUS;j++){
         if(simplex_point[i].vertex[j]==0) {p=simplex_point[i];done=1;break;}
         }}
-                
+
 //System.out.println("found marked pt");
 
 // find vertices on boundary
         dum=0;
         getnn(p,dum,nn,vnum);
     // System.out.println("boundary length in metro is "+vnum[0]);
-             
+
 
 // flag them
         for(i=0;i<DPLUSPLUS;i++){
@@ -1019,10 +1181,10 @@ dsd=dsd-ds0;
         }
         }
 dsn=0.0;
-       
-        
+
+//System.out.println("Number of simplices and bulk nodes "+(simplex_number-vnum[0])+" "+(node_number-vnum[0]) );
 ////////////////////// Node Insertion ////
-        
+
 if(subsimplex==D){
     // check if inserting into boundary triangle
         notnnmarked=1;
@@ -1030,12 +1192,21 @@ if(subsimplex==D){
             if(a[i]==0){notnnmarked=0;}
         }
 
+				if(notnnmarked==1) {
+		      dsd = kappa_d*(2*subsimplex-D);
+		      dsd=dsd+(2*subsimplex-D)*((2*subsimplex-D)+2*(simplex_number-vnum[0]-DISKVOL) )  /(1.0*DV*DV) ;
+		    }
+		    else{
+		      dsd = kappa_d; ds0=-kappa_0b;
+		      dsd=dsd+(1+2*(simplex_number-vnum[0]-DISKVOL) )  /(1.0*DV*DV) ;
+		    } // additional minus sign in ds0 from formula
+
     /* node insertion */
         for(i=0;i<DPLUS;i++){
             // tmp=(double)localvol[a[i]];
             tmp=find_order(a[i],addresses[DPLUS]);
             if(a[i]==0){ //local vol of the MN is length of the boundary
-                dsn=dsn+kappa_0*DS(tmp,D-1,markedq);
+                dsn=dsn+ALPHA*DS(tmp,D-1,MARKEDQ); // kappa_0 earlier
               }
             else{
                 dsn=dsn+BETA*DS(tmp,D-1,TC)*notbound[i]; // this only added for bulk points
@@ -1044,6 +1215,8 @@ if(subsimplex==D){
 
         //update for the inserted node
         dsn=dsn+BETA*(DPLUS-TC)*(DPLUS-TC)*notnnmarked;
+				if (notnnmarked==0 && (simplex_number-vnum[0]+1)>DISKMAXVOL){accept=LOGIC.NO; return accept;}
+		    else if (notnnmarked==1 && (simplex_number-vnum[0]+2)>DISKMAXVOL){accept=LOGIC.NO; return accept;}
     }
 
     else if(subsimplex==0){
@@ -1051,23 +1224,39 @@ if(subsimplex==D){
         for(i=1;i<DPLUSPLUS;i++){
             if(a[i]==0){notnnmarked=0;}
         }
-        
+
+				if(notnnmarked==1) {
+		      dsd = kappa_d*(2*subsimplex-D);
+		      dsd=dsd+(2*subsimplex-D)*((2*subsimplex-D)+2*(simplex_number-vnum[0]-DISKVOL) )  /(1.0*DV*DV) ;
+		    }
+		    else  {
+		      dsd = -kappa_d; ds0= kappa_0b;
+		      dsd=dsd-(-1+2*(simplex_number-vnum[0]-DISKVOL) )  /(1.0*DV*DV) ; //delta N_D=-1
+		    } // additional minus sign in ds0 from formula
+
+
     // check if deleting a boundary node
     /* node deletion */
     for(i=1;i<DPLUS;i++){
         tmp=find_order(a[i],addresses[DPLUS]);
         if(a[i]==0){
-            dsn=dsn+kappa_0*DS(tmp,-D+1,markedq);}
+            dsn=dsn+ALPHA*DS(tmp,-D+1,MARKEDQ);}
         else{
             dsn=dsn+BETA*DS(tmp,-D+1,TC)*notbound[i];}
          }
-        tmp=find_order(a[DPLUS],addresses[subsimplex+1]);
-        if(a[DPLUS]==0){
-            dsn=dsn+kappa_0*DS(tmp,-D+1,markedq);}
+
+				// should be deleted next block, right??
+
+        /*tmp=find_order(a[DPLUS],addresses[subsimplex+1]);
+
+				if(a[DPLUS]==0){
+            dsn=ALPHA*DS(tmp,-D+1,MARKEDQ);} // change needed ????
         else{
-            dsn=dsn+BETA*DS(tmp,-D+1,TC)*notbound[i];}
-        
+            dsn=dsn+BETA*DS(tmp,-D+1,TC)*notbound[i];} */
+
     dsn=dsn-BETA*(DPLUS-TC)*(DPLUS-TC)*notnnmarked;
+		if (notnnmarked==0 && (simplex_number-vnum[0]-1)<=DISKMINVOL ){accept=LOGIC.NO; return accept;}
+    if (notnnmarked==1 && (simplex_number-vnum[0]-2)<=DISKMINVOL ){accept=LOGIC.NO; return accept;}
     }
 
     //////// link flip ///////////////
@@ -1081,37 +1270,48 @@ if(subsimplex==D){
           if(a[i]==0){markedNodeModes=2;}
       }
 
+			if(markedNodeModes==1) {
+		    dsd = kappa_d; ds0= kappa_0b;
+		    dsd=dsd+(1+2*(simplex_number-vnum[0]-DISKVOL) )  /(1.0*DV*DV) ;
+		  }  // additional minus sign from formula
+		  else  if(markedNodeModes==2) {
+		    dsd = -kappa_d; ds0=-kappa_0b ;
+		     dsd=dsd-(-1+2*(simplex_number-vnum[0]-DISKVOL) )  /(1.0*DV*DV) ;
+		  }// additional minus sign from formula
 
     for(i=0;i<=subsimplex;i++){
         tmp=find_order(a[i],addresses[DPLUS]);
         if(a[i]==0){
-            dsn=dsn+kappa_0*DS(tmp,2*subsimplex-D-1,markedq);}
+            dsn=dsn+ALPHA*DS(tmp,2*subsimplex-D-1,MARKEDQ);}
         else{
             if(markedNodeModes==0){
               dsn=dsn+BETA*DS(tmp,2*subsimplex-D-1,TC)*notbound[i];
             }
             else if(markedNodeModes==1){
-              dsn=dsn+BETA*DS(tmp,2*subsimplex-D-1,TC);
+              //dsn=dsn+BETA*DS(tmp,2*subsimplex-D-1,TC);
+							dsn=dsn+BETA*(tmp-1-TC)*(tmp-1-TC);
             }
             }
     }
     for(i=subsimplex+1;i<DPLUS;i++){
         tmp=find_order(a[i],addresses[DPLUS]);
         if(a[i]==0){
-            dsn=dsn+kappa_0*DS(tmp,2*subsimplex-D+1,markedq)*notbound[i];}
+            dsn=dsn+ALPHA*DS(tmp,2*subsimplex-D+1,MARKEDQ);}
             else{
                 if(markedNodeModes==0){
                     dsn=dsn+BETA*DS(tmp,2*subsimplex-D+1,TC)*notbound[i];
                   }
                 else if(markedNodeModes==2){
-                  dsn=dsn+BETA*DS(tmp,2*subsimplex-D+1,TC);
+                  //dsn=dsn+BETA*DS(tmp,2*subsimplex-D+1,TC);
+									dsn=dsn-BETA*(tmp-TC)*(tmp-TC);
                 }
           }
-        
+
     }
+		/* This should be commented right??
     tmp=find_order(a[DPLUS],addresses[subsimplex+1]);
         if(a[i]==0){
-          dsn=dsn+kappa_0*DS(tmp,2*subsimplex-D+1,markedq)*notbound[i];}
+          dsn=dsn+ALPHA*DS(tmp,2*subsimplex-D+1,MARKEDQ)*notbound[i];}
           else{
               if(markedNodeModes==0){
                   dsn=dsn+BETA*DS(tmp,2*subsimplex-D+1,TC)*notbound[i];
@@ -1120,16 +1320,186 @@ if(subsimplex==D){
                 dsn=dsn+BETA*DS(tmp,2*subsimplex-D+1,TC);
               }
         }
+				*/
+
+			if(markedNodeModes==1 && (simplex_number-vnum[0]+1)> DISKMAXVOL){accept=LOGIC.NO; return accept;}
+			if(markedNodeModes==2 && (simplex_number-vnum[0]-1) <=DISKMINVOL ){accept=LOGIC.NO; return accept;} //don't think this condition is possible
+
 }
-        
-        
+
+
 if((subsimplex==0)&&(a[0]==0)){System.out.println("trying to delete marked node\n");dsd=1000000.0;}
-        
-dsd=dsd+dsn;
-    
+
+dsd=dsd+dsn+ds0;
+
 dsd=Math.exp(dsd);
 
-dsd=(1.0+(double)(2*subsimplex-D)/(double)simplex_number)*dsd;
+/*
+int markedNodeModes=0; // 0 is bulk mode
+for(i=0;i<=subsimplex;i++){
+    if(a[i]==0){markedNodeModes=1;}
+}
+for(i=subsimplex+1;i<DPLUSPLUS;i++){
+    if(a[i]==0){markedNodeModes=2;}
+}
+
+
+if(markedNodeModes==0) {dsd=(1.0+(double)(2*subsimplex-D)/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==2){dsd=(1.0+1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==0){dsd=(1.0-1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==1 && markedNodeModes==1){dsd=(1.0+1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==1 && markedNodeModes==2){dsd=(1.0-1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+*/
+//else {printf("some condition not considerd, sub=%d, markedNodeModes=%d",sub,markedNodeModes);}
+
+
+
+dsd=(1.0+(double)(2*subsimplex-D)/(double)(simplex_number))*dsd;
+
+dsd=1.0/(1.0+dsd);
+
+dummy=Math.random()-dsd;
+
+if(dummy<0.0)
+    accept=LOGIC.YES;
+
+else
+    accept=LOGIC.NO;
+
+if(grow==LOGIC.YES)
+    accept=LOGIC.YES;
+
+//if(((simplex_number+2*subsimplex-D)<MINVOL) || ((simplex_number+2*subsimplex-D)>MAXVOL)) accept=LOGIC.NO;
+		return(accept);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+public LOGIC metropolis(int subsimplex, int[] a,
+			SIMPLEX[] addresses) {
+		double ds0=0.0,dsd=0.0,dsn=0.0,dummy,change;
+		LOGIC accept;
+		int i,j,k,dum,notnnmarked,imark;
+        int[] vnum,nn,notbound;
+        SIMPLEX p=null;
+		int tmp;
+        vnum=new int[1];
+        nn=new int[VOL];
+        notbound=new int[DPLUSPLUS];
+
+
+// find marked node
+        int done=0;
+        for(i=0;i<pointer_number;i++){
+            if(simplex_point[i]==null) continue;
+
+        if(done==1) break;
+        for(j=0;j<DPLUS;j++){
+        if(simplex_point[i].vertex[j]==0) {p=simplex_point[i];done=1;break;}
+        }}
+
+//System.out.println("found marked pt");
+
+// find vertices on boundary
+        dum=0;
+        getnn(p,dum,nn,vnum);
+    // System.out.println("boundary length in metro is "+vnum[0]);
+
+
+// flag them
+        for(i=0;i<DPLUSPLUS;i++){
+        notbound[i]=1;
+	        for(j=0;j<vnum[0];j++){
+	        	if(a[i]==nn[j]) {
+							notbound[i]=0;accept=LOGIC.NO;
+				  		return accept;
+						}
+	        }
+        }
+dsn=0.0;
+notnnmarked=1;
+for(i=0;i<DPLUS;i++){
+		if(a[i]==0){notnnmarked=0;}
+}
+
+ds0=0.0; // delta N0_boundary=0
+dsd = kappa_d*(2*subsimplex-D);
+dsd=dsd+(2*subsimplex-D)*((2*subsimplex-D)+2*(simplex_number-vnum[0]-DISKVOL) )  /(1.0*DV*DV) ;
+
+
+//System.out.println("Number of simplices and bulk nodes "+(simplex_number-vnum[0])+" "+(node_number-vnum[0]) );
+////////////////////// Node Insertion ////
+
+if(subsimplex==D){
+
+
+    /* node insertion */
+        for(i=0;i<DPLUS;i++){
+            // tmp=(double)localvol[a[i]];
+            tmp=find_order(a[i],addresses[DPLUS]);
+            dsn=dsn+BETA*DS(tmp,D-1,TC)*notbound[i]; // this only added for bulk points
+        }
+
+        //update for the inserted node
+        dsn=dsn+BETA*(DPLUS-TC)*(DPLUS-TC)*notnnmarked;
+
+    }
+
+    else if(subsimplex==0 && a[0]!=0){
+
+    	/* node deletion */
+    	for(i=1;i<DPLUS;i++){
+        	tmp=find_order(a[i],addresses[DPLUS]);
+        	dsn=dsn+BETA*DS(tmp,-D+1,TC)*notbound[i];
+			}
+
+			dsn=dsn-BETA*(DPLUS-TC)*(DPLUS-TC)*notnnmarked;
+		}
+
+    //////// link flip ///////////////
+    else{
+
+
+    for(i=0;i<=subsimplex;i++){
+        tmp=find_order(a[i],addresses[DPLUS]);
+        dsn=dsn+BETA*DS(tmp,2*subsimplex-D-1,TC)*notbound[i];
+    }
+    for(i=subsimplex+1;i<DPLUS;i++){
+        tmp=find_order(a[i],addresses[DPLUS]);
+        dsn=dsn+BETA*DS(tmp,2*subsimplex-D+1,TC)*notbound[i];
+    }
+
+
+}
+
+
+if((subsimplex==0)&&(a[0]==0)){System.out.println("trying to delete marked node\n");dsd=1000000.0;}
+
+dsd=dsd+dsn+ds0;
+
+dsd=Math.exp(dsd);
+
+/*
+int markedNodeModes=0; // 0 is bulk mode
+for(i=0;i<=subsimplex;i++){
+    if(a[i]==0){markedNodeModes=1;}
+}
+for(i=subsimplex+1;i<DPLUSPLUS;i++){
+    if(a[i]==0){markedNodeModes=2;}
+}
+
+
+if(markedNodeModes==0) {dsd=(1.0+(double)(2*subsimplex-D)/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==2){dsd=(1.0+1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==0){dsd=(1.0-1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==1 && markedNodeModes==1){dsd=(1.0+1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+else if(subsimplex==1 && markedNodeModes==2){dsd=(1.0-1.0/(double)(simplex_number-vnum[0]) )*dsd;}
+*/
+//else {printf("some condition not considerd, sub=%d, markedNodeModes=%d",sub,markedNodeModes);}
+
+
+
+dsd=(1.0+(double)(2*subsimplex-D)/(double)(simplex_number))*dsd;
 
 dsd=1.0/(1.0+dsd);
 
@@ -1145,10 +1515,13 @@ if(grow==LOGIC.YES)
     accept=LOGIC.YES;
 
 if(((simplex_number+2*subsimplex-D)<MINVOL) || ((simplex_number+2*subsimplex-D)>MAXVOL)) accept=LOGIC.NO;
-		return(accept);
+
+return(accept);
 
 }
-	
+
+
+//////////////////*****************************************************************///////////////////////////////
 
 	public void pop()
 	{
@@ -1188,7 +1561,6 @@ if(((simplex_number+2*subsimplex-D)<MINVOL) || ((simplex_number+2*subsimplex-D)>
 		manifold_check*=VOL;
 
 		double tmp=(real_simplex-VOL)*2.0/(DV*DV);
-
 		System.out.println("Average number of simplices " + real_simplex);
 		System.out.println("Average number of nodes " + real_node);
 		System.out.println("Average maximum pointer number " + max_point);
@@ -1281,7 +1653,7 @@ if(((simplex_number+2*subsimplex-D)<MINVOL) || ((simplex_number+2*subsimplex-D)>
 
 	void reconnect(int[] a, SIMPLEX[] q, int sub)
 	{
-		
+
 		int  i,j,index_face1,index_face2,index_face3,opp;
 
 		/* loop over final state simplices */
@@ -1346,7 +1718,7 @@ if(((simplex_number+2*subsimplex-D)<MINVOL) || ((simplex_number+2*subsimplex-D)>
 			subsimplex=D;
 		else
 			/* in general choose move type at random */
-			subsimplex=(int)(Math.random()*DPLUS); 
+			subsimplex=(int)(Math.random()*DPLUS);
 
         //System.out.println("subsimplex in select_simplex is "+subsimplex);
 
@@ -1360,15 +1732,18 @@ if(((simplex_number+2*subsimplex-D)<MINVOL) || ((simplex_number+2*subsimplex-D)>
 	public void shift_coupling()
 	{
 		double dum,dum2;
-
-		dum=((double)vol_monitor)/((double)num_monitor);
+		dum=((double)(vol_monitor-b_monitor))/((double)num_monitor);
         dum2=((double)b_monitor)/((double)num_monitor);
 
-		kappa_d=kappa_d+(2.0/(DV*DV))*(dum-VOL);
-        kappa_b=kappa_b-2*kappa_0*(dum2-BDY);
+		kappa_d=kappa_d+(2.0/(DV*DV))*(dum-DISKVOL)+2.0*ALPHA*(dum2-MARKEDQ)*FRAC/(2.0-FRAC);
+      //  ALPHA=ALPHA+2*ALPHA*(dum2-FRAC*VOL/2);
 
-		System.out.println("New coupling is " + kappa_d);
-
+		System.out.println("New coupling kappa_d is " + kappa_d);
+		System.out.println("Average disk volume=" + dum);
+		System.out.println("Average boundary length=" + dum2);
+			System.out.println("sum of total boundary length=" + b_monitor);
+			//System.out.println("MARKEDQ is " + MARKEDQ);
+		//System.out.println("ALPHA is "+ALPHA);
 		vol_monitor=0;
         b_monitor=0;
 		num_monitor=0;

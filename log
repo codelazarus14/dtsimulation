@@ -1,0 +1,109 @@
+Launched simulation
+About to call initial_config
+About to grow lattice
+Dimension 2
+Volume 304
+Marked node coupling 0.25
+Simplex coupling 0.0
+Bulk coupling 3.0
+Number of sweeps 1000
+Thermalisation time 1000
+Number of sweeps between KD tuning 100
+Gap between measurements 10
+Volume fluctuation parameter 2
+Random number seed 1
+Thermalizing lattice
+V: 186
+L: 122
+N0B: 155
+New coupling kappa_d is 0.7000000000000043
+Average disk volume=189.18
+Average boundary length=115.7
+sum of total boundary length=11570
+V: 179
+L: 129
+N0B: 155
+New coupling kappa_d is 0.7479999999999961
+Average disk volume=183.67
+Average boundary length=122.71
+sum of total boundary length=12271
+V: 184
+L: 122
+N0B: 154
+New coupling kappa_d is 0.5100000000000011
+Average disk volume=182.33
+Average boundary length=123.99
+sum of total boundary length=12399
+V: 184
+L: 120
+N0B: 153
+New coupling kappa_d is 0.5279999999999976
+Average disk volume=183.16
+Average boundary length=123.46
+sum of total boundary length=12346
+V: 184
+L: 124
+N0B: 155
+New coupling kappa_d is 0.4219999999999986
+Average disk volume=182.0
+Average boundary length=124.98
+sum of total boundary length=12498
+V: 183
+L: 125
+N0B: 155
+New coupling kappa_d is 0.5539999999999938
+Average disk volume=183.07
+Average boundary length=123.99
+sum of total boundary length=12399
+V: 182
+L: 124
+N0B: 154
+New coupling kappa_d is 0.48200000000000087
+Average disk volume=182.8
+Average boundary length=123.76
+sum of total boundary length=12376
+V: 185
+L: 123
+N0B: 155
+New coupling kappa_d is 0.4740000000000053
+Average disk volume=183.27
+Average boundary length=123.19
+sum of total boundary length=12319
+V: 183
+L: 125
+N0B: 155
+New coupling kappa_d is 0.6539999999999992
+Average disk volume=182.89
+Average boundary length=124.45
+sum of total boundary length=12445
+V: 181
+L: 127
+N0B: 155
+New coupling kappa_d is 0.5560000000000003
+Average disk volume=182.34
+Average boundary length=124.44
+sum of total boundary length=12444
+Boundary length 123
+Total bulk node 29
+Boundary length 126
+Total bulk node 30
+Boundary length 127
+Total bulk node 28
+Boundary length 129
+Total bulk node 26
+Boundary length 129
+Total bulk node 26
+Boundary length 131
+Total bulk node 25
+Boundary length 128
+Total bulk node 26
+Boundary length 127
+Total bulk node 26
+Boundary length 127
+Total bulk node 27
+Boundary length 126
+Total bulk node 29
+Boundary length 130
+Total bulk node 27
+Boundary length 127
+Total bulk node 28

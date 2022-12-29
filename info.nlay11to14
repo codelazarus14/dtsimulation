@@ -1,0 +1,41 @@
+
+11 layer info:
+total vertex, N0= 924
+boundary length= 684
+Bulk points (total vertex-boundary points) 240
+L(sorted_bvID)= 684
+boundary length= 684.0
+L_bv= 684
+boundary distance array created
+(924, 924)
+***********************************************************
+nlay=12
+total vertex, N0= 1440
+boundary length= 1062
+Bulk points (total vertex-boundary points) 378
+L(sorted_bvID)= 1062
+boundary length= 1062.0
+L_bv= 1062
+boundary distance array created
+(1440, 1440)
+***************************************************************
+nlay13
+total vertex, N0= 2244
+boundary length= 1653
+Bulk points (total vertex-boundary points) 591
+L(sorted_bvID)= 1653
+boundary length= 1653.0
+L_bv= 1653
+boundary distance array created
+(2244, 2244)
+*****************************************************************
+nlay=14
+total vertex, N0= 3495
+boundary length= 2571
+Bulk points (total vertex-boundary points) 924
+L(sorted_bvID)= 2571
+boundary length= 2571.0
+L_bv= 2571
+boundary distance array created
+(3495, 3495)
+********************************************************************
