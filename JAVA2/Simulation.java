@@ -6,6 +6,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.JSlider;
 import java.awt.Color;
 
+
 public class Simulation extends Canvas implements Runnable {
 
 	private boolean running;
@@ -15,12 +16,12 @@ public class Simulation extends Canvas implements Runnable {
 	private int XSIZE = 800, YSIZE = 800;
 	private int speed = 200;
     private static final int BETA_MIN = 0;
-    private static final int BETA_MAX = +15;
-    private static final int BETA_INIT = 1;
-    private static final int K_MIN = 0;
-    private static final int K_MAX = +15;
-    private static final int K_INIT = 0;
-	
+    private static final int BETA_MAX = +100;
+    private static final int BETA_INIT = +30;
+    private static final int ALPHA_MIN = 0;
+    private static final int ALPHA_MAX = +20;
+    private static final int ALPHA_INIT = +5;
+
 	public static void main(String[] args) {
 		new Simulation();
 		System.out.println("Launched simulation");
@@ -36,14 +37,14 @@ public class Simulation extends Canvas implements Runnable {
 		canvasPanel.add(this);
 		Panel controlPanel = new Panel();
 		Button simControl = new Button("Start/Stop");
-        
+
 		simControl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				running = !running;
 			}
 		});
-        
-        JLabel BETALabel = new JLabel("BETA", JLabel.CENTER);
+
+        JLabel BETALabel = new JLabel("BETA*10", JLabel.CENTER);
         BETALabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         JSlider sliderBETA = new JSlider(JSlider.HORIZONTAL,
                                         BETA_MIN, BETA_MAX, BETA_INIT);
@@ -52,45 +53,46 @@ public class Simulation extends Canvas implements Runnable {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
                 if (!source.getValueIsAdjusting()) {
-                    mydt.BETA = (double)source.getValue();
+                    mydt.BETA = (double)source.getValue()*0.1; // multiply by 0.1 to get fractional BETA;
                     System.out.println("BETA is "+mydt.BETA);
                 }
             }
 
         });
-        
-        sliderBETA.setMajorTickSpacing(5);
+
+        sliderBETA.setMajorTickSpacing(20);
         sliderBETA.setMinorTickSpacing(1);
         sliderBETA.setPaintTicks(true);
         sliderBETA.setPaintLabels(true);
 
-        JLabel KappaLabel = new JLabel("GAMMA", JLabel.CENTER);
+				/*
+        JLabel KappaLabel = new JLabel("ALPHA*20", JLabel.CENTER);
         KappaLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         JSlider sliderKappa = new JSlider(JSlider.HORIZONTAL,
-                                         K_MIN, K_MAX, K_INIT);
-        
+                                         ALPHA_MIN, ALPHA_MAX, ALPHA_INIT);
+
         sliderKappa.addChangeListener(new ChangeListener(){
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
                 if (!source.getValueIsAdjusting()) {
-                    mydt.kappa_0 = (double)source.getValue();
-                    System.out.println("Kappa is "+mydt.kappa_0);
+                    mydt.ALPHA = (double)source.getValue()*0.05; // multiply by 0.1 to get fractional ALPHA/kappa_0??
+                    System.out.println("ALPHA is "+mydt.ALPHA);
                 }
             }
-            
+
         });
-        
-        sliderKappa.setMajorTickSpacing(5);
-        sliderKappa.setMinorTickSpacing(1);
+
+        sliderKappa.setMajorTickSpacing(10);
+        sliderKappa.setMinorTickSpacing(2);
         sliderKappa.setPaintTicks(true);
         sliderKappa.setPaintLabels(true);
+				*/
 
-        
         JLabel TimeLabel = new JLabel("Sweep time", JLabel.CENTER);
         TimeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         JSlider sliderTime = new JSlider(JSlider.HORIZONTAL,
                                           50, 500, 100);
-        
+
         sliderTime.addChangeListener(new ChangeListener(){
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
@@ -99,24 +101,24 @@ public class Simulation extends Canvas implements Runnable {
                     System.out.println("Inverse speed "+speed);
                 }
             }
-            
+
         });
-        
+
         sliderTime.setMajorTickSpacing(100);
         sliderTime.setMinorTickSpacing(50);
         sliderTime.setPaintTicks(true);
         sliderTime.setPaintLabels(true);
 
-		
-		
+
+
         controlPanel.add(BETALabel);
         controlPanel.add(sliderBETA);
-        controlPanel.add(KappaLabel);
-        controlPanel.add(sliderKappa);
+        //controlPanel.add(KappaLabel);
+        //controlPanel.add(sliderKappa);
 		controlPanel.add(simControl);
         controlPanel.add(TimeLabel);
 		controlPanel.add(sliderTime);
-		
+
 		pictureFrame.add(canvasPanel);
 		pictureFrame.add(controlPanel, BorderLayout.SOUTH);
 		pictureFrame.addWindowListener(new WindowAdapter() {
@@ -167,10 +169,12 @@ public class Simulation extends Canvas implements Runnable {
 						itmp = DT.ncol[j];
 						xPos1 = (int) (SCALE * myembed.x[itmp]) + XCENTER;
 						yPos1 = (int) (SCALE * myembed.y[itmp]) + YCENTER;
+
 						g.drawLine(xPos2, yPos2, xPos1, yPos1);
 					}
 				}
 			} catch (NullPointerException e) {}
+
 
 	}
 
